@@ -1,0 +1,56 @@
+version: '3.8'
+
+networks: 
+  observability_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: demo_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword 
+      - MYSQL_DATABASE=shop_db
+      - MYSQL_USER=app_user
+      - MYSQL_PASSWORD=app_password
+    volumes:
+      - mysql_data:var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - observability_net
+
+  backend-app:
+    build: 
+      context: ./target-app
+    container_name: demo_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=database # Tên service database ở trên -> Tự nhận diện mạng!
+      - DB_USER=app_user
+      - DB_PASSWORD=app_password
+    volumes:
+      - ./target-app/logs:/app/logs # Nối thư mục logs trên máy thật với container để Alloy dễ đọc
+    depends_on:
+      - database # Phải chờ database chạy xong mới được chạy
+    networks:
+      - observability_net
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: demo_alloy
+    ports:
+      - "4317:4317" # Mở port gRPC để App bắn Trace vào đây
+      - "4318:4318" # Mở port HTTP để App bắn Trace
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy # Bơm file cấu hình chính
+      - ./target-app/logs:/var/log/app # Nối chung vào thư mục log của App để Alloy đọc được!
+      - ./nginx/logs:/var/log/nginx  # Đọc log của Nginx
+    command: 
+      - run
+      - /etc/alloy/config.alloy # Yêu cầu Alloy chạy dựa trên file cấu hình này
+    networks:
+      - observability_net
