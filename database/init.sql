@@ -2,8 +2,8 @@
 -- Setup database bằng MySQL trong file `init.sql` và cố tình tạo lỗi để test
 -- ===========================================================================
 
-CREATE DATABASE IF NOT EXISTS observationsystem_db;
-USE observationsystem_db;
+CREATE DATABASE IF NOT EXISTS shop_db;
+USE shop_db;
 
 -- ===========================================================================
 -- 1. BẢNG USERS (KHÔNG CÓ LỖI)
