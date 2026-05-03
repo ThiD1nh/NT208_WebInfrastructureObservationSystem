@@ -65,5 +65,7 @@ services:
     command: 
       - run
       - /etc/alloy/config.alloy 
+    depends_on:
+      - nginx
     networks:
       - observability_net
