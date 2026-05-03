@@ -29,13 +29,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=database # Tên service database ở trên -> Tự nhận diện mạng!
+      - DB_HOST=database 
       - DB_USER=app_user
       - DB_PASSWORD=app_password
     volumes:
-      - ./target-app/logs:/app/logs # Nối thư mục logs trên máy thật với container để Alloy dễ đọc
+      - ./target-app/logs:/app/logs 
     depends_on:
-      - database # Phải chờ database chạy xong mới được chạy
+      - database 
     networks:
       - observability_net
 
@@ -43,14 +43,14 @@ services:
     image: grafana/alloy:latest
     container_name: demo_alloy
     ports:
-      - "4317:4317" # Mở port gRPC để App bắn Trace vào đây
-      - "4318:4318" # Mở port HTTP để App bắn Trace
+      - "4317:4317" # Port gRPC 
+      - "4318:4318" # Port HTTP 
     volumes:
-      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy # Bơm file cấu hình chính
-      - ./target-app/logs:/var/log/app # Nối chung vào thư mục log của App để Alloy đọc được!
-      - ./nginx/logs:/var/log/nginx  # Đọc log của Nginx
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy 
+      - ./target-app/logs:/var/log/app 
+      - ./nginx/logs:/var/log/nginx 
     command: 
       - run
-      - /etc/alloy/config.alloy # Yêu cầu Alloy chạy dựa trên file cấu hình này
+      - /etc/alloy/config.alloy 
     networks:
       - observability_net
