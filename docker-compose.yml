@@ -17,8 +17,8 @@ services:
       - MYSQL_USER=app_user # Tao user trong app
       - MYSQL_PASSWORD=app_password
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql # Named volume
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql  # Bind mount
     networks:
       - observability_net
 
