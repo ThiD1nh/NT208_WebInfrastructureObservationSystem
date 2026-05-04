@@ -25,3 +25,5 @@ groups:
         annotations:
           summary: "High latency detected on Nginx"
           description: "Current average latency is {{ $value | printf \"%.2f\" }}s (threshold: 0.5s)."
+          # Small references for expr ( Discussing why I use these formula)
+          # https://discuss.prometheus.io/t/iowait-and-cpu-usage/1080
