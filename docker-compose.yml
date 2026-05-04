@@ -11,10 +11,10 @@ services:
   database:
     image: mysql:8.0
     container_name: demo_mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword 
-      - MYSQL_DATABASE=shop_db
-      - MYSQL_USER=app_user
+    environment:  # Cac thiet lap ban dau
+      - MYSQL_ROOT_PASSWORD=rootpassword  # Tao mat khau cho root
+      - MYSQL_DATABASE=shop_db  # Tao database rong shop_db de bom init.sql
+      - MYSQL_USER=app_user # Tao user trong app
       - MYSQL_PASSWORD=app_password
     volumes:
       - mysql_data:/var/lib/mysql
