@@ -5,7 +5,7 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data:
+  mysql_data: # Named volume
 
 services:
   database:
@@ -17,7 +17,7 @@ services:
       - MYSQL_USER=app_user
       - MYSQL_PASSWORD=app_password
     volumes:
-      - mysql_data:var/lib/mysql
+      - mysql_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - observability_net
