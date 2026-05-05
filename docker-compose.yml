@@ -29,7 +29,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=database
+      - DB_HOST=database  # Su dung host la database duoc khai bao o tren
       - DB_USER=app_user
       - DB_PASSWORD=app_password
       - OTLP_ENDPOINT=alloy:4317
