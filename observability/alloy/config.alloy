@@ -1,13 +1,13 @@
 // Day du lieu toi cac database
 
 prometheus.remote_write "demo_prom" {
-    endpoint = {
-        url = "http://promethus:9090/api/v1/write"
+    endpoint {
+        url = "http://prometheus:9090/api/v1/write"
     }
 }
 
 loki.write "demo_loki" {
-    endpoint = {
+    endpoint {
         url = "http://loki:3100/loki/api/v1/push"
     }
 }
@@ -16,7 +16,7 @@ otelcol.exporter.otlp "demo_tempo" {
     client {
         endpoint = "tempo:4317"
         tls {
-            insecure = true,
+            insecure = true
             insecure_skip_verify = true
         }
     }
@@ -48,23 +48,15 @@ otelcol.receiver.otlp "trace_receiver" {
     }
 }
 
+// Thu thap metrics MySQL
+// Luu y: prometheus.exporter.nginx khong ton tai trong Alloy —
+// can them container nginx-prometheus-exporter rieng de scrape nginx metrics
 
-
-// Tich hop exporters
-
-prometheus.exporters.nginx "demo_nginx" {
-    scrape_uri = "http://nginx:8080/stub_status"
-}
-
-prometheus.exporters.mysql "demo_mysql" {
+prometheus.exporter.mysql "demo_mysql" {
     data_source_name = "app_user:app_password@(database:3306)/"
 }
 
-prometheus.scape "internal_exporters" {
-    targets = array.concat (
-        prometheus.exporters.nginx.demo_nginx.targets,
-        prometheus.exporters.mysql.demo_mysql.targets,
-    )
+prometheus.scrape "internal_exporters" {
+    targets    = prometheus.exporter.mysql.demo_mysql.targets
     forward_to = [prometheus.remote_write.demo_prom.receiver]
 }
-
