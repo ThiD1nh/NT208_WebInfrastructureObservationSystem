@@ -1,0 +1,39 @@
+global:
+  # Fallback : After this duration, if there is no new data ---> No error
+  resolve_timeout: 5m
+
+route:
+  # Grouping for alerting
+  group_by: ['alertname', 'instance', 'severity']
+  
+  # Buffer time for initial alert collection before first dispatch
+  group_wait: 30s
+  
+  # Minimum interval between subsequent notifications for a specific group
+  group_interval: 5m
+  
+  # Re-notification frequency for persistent/unresolved incidents
+  repeat_interval: 3h
+  
+  # Default route for processed notifications
+  receiver: 'telegram-webhook-adapter'
+
+receivers:
+  - name: 'telegram-webhook-adapter'
+    webhook_configs:
+      - url: 'http://telegram-webhook:9000/alertmanager/webhook'
+        
+        # Include 'resolved' events in the notification lifecycle
+        send_resolved: true
+        
+        # Connection settings for internal microservices network
+        http_config:
+          enable_http2: true
+
+inhibit_rules:
+  # Suppress warnings when critical alerts for the same source are active
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
