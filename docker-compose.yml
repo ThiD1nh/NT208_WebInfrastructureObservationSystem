@@ -78,6 +78,7 @@ services:
       - tempo
     networks:
       - observability_net
+<<<<<<< Updated upstream
 
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
@@ -160,3 +161,17 @@ services:
       - tempo
     networks:
       - observability_net 
+=======
+  telegram-webhook:
+    build: 
+      context: ./custom-plugins/telegram-webhook
+      dockerfile: Dockerfile
+    container_name: demo_telegram_webhook
+    ports:
+      - "9000:9000"
+    env_file:
+      - ./custom-plugins/telegram-webhook/.env
+    networks:
+      - observability_net
+    restart: always
+>>>>>>> Stashed changes
