@@ -1,0 +1,27 @@
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9096
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+compactor:
+  compaction:
+    compaction_window: 1h
+    max_block_bytes: 1073741824
+    block_retention: 48h
+    compacted_block_retention: 10m
+
+storage: 
+  trace: 
+    backend: local
+    wal:
+      path: /tmp/tempo/wal
+    local:
+      path: /tmp/tempo/blocks

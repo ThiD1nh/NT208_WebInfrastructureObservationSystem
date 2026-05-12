@@ -28,7 +28,7 @@ CREATE TABLE products (
     product_name VARCHAR(200) NOT NULL UNIQUE,
     stock_quantity INT UNSIGNED NOT NULL    -- Cố tình tạo ra lỗi: Ép số lượng không được âm
 );
---- ===========================================================================
+-- ===========================================================================
 
 
 -- ===========================================================================
@@ -40,7 +40,8 @@ CREATE TABLE products (
 
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL, CONSTRAINT fk_orders_userid FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    -- Xóa not null để có thể khởi tạo container
+    user_id INT, CONSTRAINT fk_orders_userid FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
     total_amount DECIMAL(12, 3) NOT NULL,
     status ENUM('pending', 'completed') NOT NULL,            -- Cố tình tạo ra lỗi: Không đánh index
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

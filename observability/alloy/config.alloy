@@ -1,62 +1,79 @@
-// Day du lieu toi cac database
+// Ouput destination
 
-prometheus.remote_write "demo_prom" {
+prometheus.remote_write "to_prometheus" {
     endpoint {
         url = "http://prometheus:9090/api/v1/write"
     }
 }
 
-loki.write "demo_loki" {
+loki.write "to_loki" {
     endpoint {
         url = "http://loki:3100/loki/api/v1/push"
     }
 }
 
-otelcol.exporter.otlp "demo_tempo" {
+otelcol.exporter.otlp "to_tempo" {
     client {
         endpoint = "tempo:4317"
+        
         tls {
-            insecure = true
-            insecure_skip_verify = true
+            insecure = true 
+            insecure_skip_verify = true 
         }
     }
 }
 
-// Thu thap logs
+// Metrics collection
 
-local.file_match "app_logs" {
-    path_targets = [
-        {__path__ = "/var/log/app/*.log", service = "backend-app"},
-        {__path__ = "/var/log/nginx/*.log", service = "nginx-proxy"},
-    ]
-}
-
-loki.source.file "log_reader" {
-    targets = local.file_match.app_logs.targets
-    forward_to = [loki.write.demo_loki.receiver]
-}
-
-// Thu thap traces
-
-otelcol.receiver.otlp "trace_receiver" {
-    grpc {
-        endpoint = "0.0.0.0:4317"
-    }
-
-    output {
-        traces = [otelcol.exporter.otlp.demo_tempo.input]
-    }
-}
-
-// Thu thap metrics MySQL
-// Luu y: prometheus.exporter.nginx khong ton tai trong Alloy —
-// can them container nginx-prometheus-exporter rieng de scrape nginx metrics
-
-prometheus.exporter.mysql "demo_mysql" {
+prometheus.exporter.mysql "db_metrics" {
     data_source_name = "app_user:app_password@(database:3306)/"
 }
 
-prometheus.scrape "internal_exporters" {
-    targets    = prometheus.exporter.mysql.demo_mysql.targets
-    forward_to = [prometheus.remote_write.demo_prom.receiver]
+prometheus.scrape "scrap_all_metrics" {
+    scrape_interval = "15s"
+    targets = array.concat (
+        prometheus.exporter.mysql.db_metrics.targets,
+        [
+            { "__address__" = "nginx-exporter:9113", job = "nginx-proxy"},
+            { "__address__" = "backend-app:8000", job = "fastapi-backend"},
+        ],
+    )
+    forward_to = [prometheus.remote_write.to_prometheus.receiver]
+}
+
+// Log collection
+
+local.file_match "discover_logs" {
+    path_targets = [
+        {
+            "__path__" = "/var/log/app/*.log",
+            "job" = "fastapi-backend",
+            "type" = "application",
+        },
+        {
+            "__path__" = "/var/log/nginx/*.log",
+            "job" = "nginx-proxy", 
+            "type" = "infrastructure",
+        },
+    ]
+}
+
+
+loki.source.file "read_logs" {
+    targets = local.file_match.discover_logs.targets
+    forward_to = [loki.write.to_loki.receiver]
+}
+
+// Traces collection
+
+otelcol.receiver.otlp "receive_traces" {
+    grpc {
+        endpoint = "0.0.0.0:4317"
+    }
+    http {
+        endpoint = "0.0.0.0:4318"
+    }
+    output {
+        traces = [otelcol.exporter.otlp.to_tempo.input]
+    }
 }
