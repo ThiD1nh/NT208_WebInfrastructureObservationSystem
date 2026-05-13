@@ -78,7 +78,6 @@ services:
       - tempo
     networks:
       - observability_net
-<<<<<<< Updated upstream
 
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
@@ -131,18 +130,6 @@ services:
     networks:
       - observability_net 
 
-  telegram-webhook:
-    build: 
-      context: ./custom-plugins/telegram-webhook
-    container_name: demo_telegram_webhook
-    ports:
-      - "5000:5000" # Port nhận HTTP Post từ Alert Manager
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-    networks:
-      - observability_net
-
   grafana:
     image:  grafana/grafana:latest
     container_name: demo_grafana
@@ -161,8 +148,21 @@ services:
       - tempo
     networks:
       - observability_net 
-=======
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: demo_alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    networks:
+      - observability_net
+    restart: always
   telegram-webhook:
+
     build: 
       context: ./custom-plugins/telegram-webhook
       dockerfile: Dockerfile
@@ -174,4 +174,4 @@ services:
     networks:
       - observability_net
     restart: always
->>>>>>> Stashed changes
+
