@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Observability Traffic Console</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #18202a;
+      --muted: #647184;
+      --line: #d8dde6;
+      --primary: #1769aa;
+      --primary-dark: #0f5287;
+      --danger: #b42318;
+      --warning: #a15c07;
+      --ok: #157347;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 72px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-pill {
+      min-width: 130px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #f9fafb;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-pill.ok {
+      border-color: #acd8c1;
+      background: #edfdf3;
+      color: var(--ok);
+    }
+
+    .status-pill.bad {
+      border-color: #f2b8b5;
+      background: #fff0ef;
+      color: var(--danger);
+    }
+
+    main {
+      padding: 24px 0 36px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-head,
+    .section-body {
+      padding: 16px;
+    }
+
+    .section-head {
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .hint {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .api-base-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .button-row,
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button.secondary {
+      border-color: var(--line);
+      background: #fff;
+      color: var(--text);
+    }
+
+    button.secondary:hover {
+      background: #eef2f7;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button.danger:hover {
+      background: #8f1d14;
+    }
+
+    button.warning {
+      background: var(--warning);
+    }
+
+    button.warning:hover {
+      background: #7a4505;
+    }
+
+    .endpoint-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .endpoint {
+      display: grid;
+      grid-template-columns: 116px 1fr;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+
+    code {
+      color: #0b5cab;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .endpoint p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .auto-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .log-table-wrap {
+      overflow: auto;
+      max-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f1f4f8;
+      color: #3b4756;
+      z-index: 1;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .ok-text {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .bad-text {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (max-width: 860px) {
+      .topbar,
+      .api-base-row {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .grid,
+      .stats,
+      .auto-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .endpoint {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>Observability Traffic Console</h1>
+        <p class="subtitle">Tạo request xuống FastAPI backend để quan sát metrics, logs, traces trong LGTM stack.</p>
+      </div>
+      <div id="healthStatus" class="status-pill">Chưa kiểm tra</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <section>
+        <div class="section-head">
+          <h2>Điều khiển traffic</h2>
+          <p class="hint">Các nút bên dưới gọi trực tiếp API backend qua Nginx hoặc base URL bạn nhập.</p>
+        </div>
+        <div class="section-body">
+          <label for="apiBase">Backend API base</label>
+          <div class="api-base-row">
+            <input id="apiBase" type="text" autocomplete="off" spellcheck="false">
+            <button id="saveBase" class="secondary" type="button">Lưu</button>
+          </div>
+
+          <div class="button-row">
+            <button data-api="health" type="button">Health</button>
+            <button data-api="fast" type="button">Fast</button>
+            <button data-api="slow" class="warning" type="button">Slow</button>
+            <button data-api="error" class="danger" type="button">Error 500</button>
+          </div>
+
+          <div class="auto-grid">
+            <div>
+              <label for="trafficProfile">Kịch bản</label>
+              <select id="trafficProfile">
+                <option value="mixed">Mixed traffic</option>
+                <option value="fast">Fast only</option>
+                <option value="slow">Slow latency</option>
+                <option value="error">Error spike</option>
+              </select>
+            </div>
+            <div>
+              <label for="intervalMs">Chu kỳ gửi (ms)</label>
+              <input id="intervalMs" type="number" min="250" step="250" value="1000">
+            </div>
+            <div>
+              <label for="burstCount">Burst count</label>
+              <input id="burstCount" type="number" min="1" max="100" step="1" value="10">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <button id="startAuto" type="button">Start auto</button>
+            <button id="stopAuto" class="secondary" type="button">Stop</button>
+            <button id="sendBurst" class="secondary" type="button">Send burst</button>
+            <button id="clearLog" class="secondary" type="button">Clear log</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Ghi chú API backend</h2>
+          <p class="hint">Mapping rõ giữa frontend và endpoint backend.</p>
+        </div>
+        <div class="section-body">
+          <ul class="endpoint-list">
+            <li class="endpoint">
+              <code>GET /health</code>
+              <p>Nút Health gọi API kiểm tra backend sống, cập nhật trạng thái trên góc phải.</p>
+            </li>
+            <li class="endpoint">
+              <code>GET /api/fast</code>
+              <p>Nút Fast và profile Fast only tạo request nhanh để quan sát throughput bình thường.</p>
+            </li>
+            <li class="endpoint">
+              <code>GET /api/slow</code>
+              <p>Nút Slow và profile Slow latency tạo latency khoảng 2 giây để quan sát request chậm.</p>
+            </li>
+            <li class="endpoint">
+              <code>GET /api/error</code>
+              <p>Nút Error 500 và profile Error spike tạo HTTP 500 có chủ đích để quan sát log lỗi, alert, trace lỗi.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <section style="margin-top: 16px;">
+      <div class="section-head">
+        <h2>Thống kê phiên hiện tại</h2>
+      </div>
+      <div class="section-body">
+        <div class="stats">
+          <div class="stat"><strong id="totalCount">0</strong><span>Total</span></div>
+          <div class="stat"><strong id="okCount">0</strong><span>2xx/opaque</span></div>
+          <div class="stat"><strong id="errorCount">0</strong><span>4xx/5xx/network</span></div>
+          <div class="stat"><strong id="avgLatency">0 ms</strong><span>Avg latency</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 16px;">
+      <div class="section-head">
+        <h2>Request log</h2>
+        <p class="hint">Log này chỉ để nhìn nhanh tại trình duyệt; dữ liệu quan sát chính vẫn nằm ở Nginx, FastAPI, Alloy, Loki, Tempo, Prometheus.</p>
+      </div>
+      <div class="section-body">
+        <div class="log-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>API</th>
+                <th>URL</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody id="requestLog">
+              <tr><td colspan="6" class="muted">Chưa có request.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
