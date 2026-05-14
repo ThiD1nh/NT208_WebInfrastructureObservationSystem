@@ -4,3 +4,4 @@ opentelemetry-distro==0.54b0
 opentelemetry-exporter-otlp==1.33.0
 opentelemetry-instrumentation-fastapi==0.54b0
 opentelemetry-instrumentation-logging==0.54b0
+prometheus-client==0.21.1
