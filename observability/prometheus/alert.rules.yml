@@ -1,8 +1,34 @@
-
-groups:
-  - name: performance_alerts
+ groups:
+  - name: backend_performance_alerts
     rules:
-      # --- ALERT 1: HIGH CPU USAGE  ---
+      # --- ALERT 1: HIGH REQUEST LATENCY ---
+      # Fires if the average response time exceeds 0.5 seconds over a 5-minute window.
+      # Formula: sum(rate(duration_sum)) / sum(rate(duration_count))
+      - alert: BackendHighLatency
+        expr: (sum(rate(http_request_duration_seconds_sum[5m])) / sum(rate(http_request_duration_seconds_count[5m]))) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High Latency on {{ $labels.instance }}"
+          description: "Average request latency is {{ $value | printf \"%.2f\" }}s (threshold: 0.5s)."
+
+      # --- ALERT 2: HIGH SERVER ERROR RATE (5xx) ---
+      # Fires if the rate of 5xx server errors is greater than 0.1 per second.
+      # This indicates the backend is crashing or having internal logic failures.
+      - alert: BackendServerErrors
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "High 5xx Error Rate on {{ $labels.instance }}"
+          description: "Backend is returning 5xx errors at a rate of {{ $value }} req/sec."
+    - name: performance_alerts
+    rules:
+      # --- ALERT 3: HIGH CPU USAGE  ---
       # Description: Fires if CPU usage is above 80% for 2 minutes.
       - alert: HostHighCpuLoad
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
@@ -13,17 +39,5 @@ groups:
         annotations:
           summary: "High CPU load on {{ $labels.instance }}"
           description: "CPU usage is at {{ $value | printf \"%.2f\" }}% (threshold: 80%)."
-
-      # --- ALERT 2: HIGH REQUEST LATENCY  ---
-      # Description: Fires if average Nginx latency is above 0.5s for 1 minute.
-      - alert: NginxHighLatency
-        expr: (sum(rate(nginx_http_request_duration_seconds_sum[5m])) / sum(rate(nginx_http_request_duration_seconds_count[5m]))) > 0.5
-        for: 1m
-        labels:
-          severity: warning
-          service: nginx
-        annotations:
-          summary: "High latency detected on Nginx"
-          description: "Current average latency is {{ $value | printf \"%.2f\" }}s (threshold: 0.5s)."
           # Small references for expr ( Discussing why I use these formula)
           # https://discuss.prometheus.io/t/iowait-and-cpu-usage/1080
