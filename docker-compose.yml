@@ -10,7 +10,28 @@ volumes:
   tempo_data:    
   grafana_data:
 
+x-logging: &default-logging
+  driver: loki
+  options:
+    loki-url: 'http://localhost:3100/api/prom/push'
+    loki-pipeline-stages: |
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
+          max_wait_time: 3s
+      - regex:
+          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}) (?P<message>(?s:.*))$$'
+
 services:
+
+  loki:
+    image: grafana/loki:3.5.0
+    container_name: demo_loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - observability_net
+
   database:
     image: mysql:8.0
     container_name: demo_mysql
@@ -104,18 +125,18 @@ services:
     networks:
       - observability_net 
 
-  loki:
-    image:  grafana/loki:latest
-    container_name: demo_loki
-    user: "root"
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
-      - loki_data:/tmp/loki
-    command:  -config.file=/etc/loki/local-config.yaml
-    networks:
-      - observability_net 
+  # loki:
+  #   image:  grafana/loki:latest
+  #   container_name: demo_loki
+  #   user: "root"
+  #   ports:
+  #     - "3100:3100"
+  #   volumes:
+  #     - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+  #     - loki_data:/tmp/loki
+  #   command:  -config.file=/etc/loki/local-config.yaml
+  #   networks:
+  #     - observability_net 
 
   tempo:
     image: grafana/tempo:2.8.0
