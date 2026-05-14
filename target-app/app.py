@@ -1,10 +1,19 @@
 import asyncio
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from logger import setup_logger
+from metrics import PrometheusMiddleware, metrics_endpoint
 from otel_setup import setup_otel
+
+
+class _MetricsEndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "GET /metrics" not in record.getMessage()
+
+logging.getLogger("uvicorn.access").addFilter(_MetricsEndpointFilter())
 
 app = FastAPI(title="Demo Backend App")
 
@@ -12,6 +21,9 @@ app = FastAPI(title="Demo Backend App")
 # kịp patch log record factory trước khi logger được tạo
 setup_otel(app)
 logger = setup_logger()
+
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", metrics_endpoint)
 
 
 @app.exception_handler(Exception)
