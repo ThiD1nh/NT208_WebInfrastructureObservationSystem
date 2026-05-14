@@ -88,7 +88,6 @@ services:
       - nginx
     networks:
       - observability_net
-    
 
   prometheus:
     image:  prom/prometheus:latest
@@ -161,8 +160,8 @@ services:
     networks:
       - observability_net
     restart: always
-  telegram-webhook:
 
+  telegram-webhook:
     build: 
       context: ./custom-plugins/telegram-webhook
       dockerfile: Dockerfile

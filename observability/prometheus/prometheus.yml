@@ -1,19 +1,21 @@
 global:
   scrape_interval: 15s  # By default, scrape targets every 15 seconds.
   evaluation_interval: 15s # Evaluate rules every 15 seconds.
+
 rule_files:
   - 'alert.rules.yml'
+
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
           - alertmanager:9093
+
 scrape_configs:
   # Monitor itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-
   # Get metrics from alloy
   # Alloy: Node-exporter, MySQL-exporter, Nginx-exporter
   - job_name: 'alloy-telemetry'
