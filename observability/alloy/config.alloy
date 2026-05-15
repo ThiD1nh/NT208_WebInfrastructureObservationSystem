@@ -2,19 +2,19 @@
 
 prometheus.remote_write "to_prometheus" {
     endpoint {
-        url = "http://prometheus:9090/api/v1/write"
+        url = "http://demo_prometheus:9090/api/v1/write"
     }
 }
 
 loki.write "to_loki" {
     endpoint {
-        url = "http://loki:3100/loki/api/v1/push"
+        url = "http://demo_loki:3100/loki/api/v1/push"
     }
 }
 
 otelcol.exporter.otlp "to_tempo" {
     client {
-        endpoint = "tempo:4317"
+        endpoint = "demo_tempo:4317"
         
         tls {
             insecure = true 
@@ -26,16 +26,17 @@ otelcol.exporter.otlp "to_tempo" {
 // Metrics collection
 
 prometheus.exporter.mysql "db_metrics" {
-    data_source_name = "app_user:app_password@(database:3306)/"
+    data_source_name = "app_user:app_password@(demo_mysql:3306)/"
 }
 
 prometheus.scrape "scrap_all_metrics" {
     scrape_interval = "15s"
+    scrape_timeout = "10s"
     targets = array.concat (
         prometheus.exporter.mysql.db_metrics.targets,
         [
-            { "__address__" = "nginx-exporter:9113", job = "nginx-proxy"},
-            { "__address__" = "backend-app:8000", job = "fastapi-backend"},
+            { "__address__" = "demo_nginx_exporter:9113", job = "nginx-proxy"},
+            { "__address__" = "demo_backend:8000", job = "fastapi-backend"},
         ],
     )
     forward_to = [prometheus.remote_write.to_prometheus.receiver]
