@@ -5,6 +5,7 @@ server:
   grpc_listen_port: 9095
 
 common:
+  replication_factor: 1 
   path_prefix: /tmp/loki
   storage: 
     filesystem:
