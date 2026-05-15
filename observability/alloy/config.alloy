@@ -29,11 +29,15 @@ prometheus.exporter.mysql "db_metrics" {
     data_source_name = "app_user:app_password@(demo_mysql:3306)/"
 }
 
+prometheus.exporter.unix "host_metrics" {
+}
+
 prometheus.scrape "scrap_all_metrics" {
     scrape_interval = "15s"
     scrape_timeout = "10s"
     targets = array.concat (
         prometheus.exporter.mysql.db_metrics.targets,
+        prometheus.exporter.unix.host_metrics.targets,
         [
             { "__address__" = "demo_nginx_exporter:9113", job = "nginx-proxy"},
             { "__address__" = "demo_backend:8000", job = "fastapi-backend"},

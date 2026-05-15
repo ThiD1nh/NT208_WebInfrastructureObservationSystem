@@ -47,7 +47,7 @@ services:
     image: nginx:alpine
     container_name: demo_nginx
     ports:
-      - "8081:80"
+      - "80:80"     # Tiến sẽ cần sửa qua 8081:80
       - "8080:8080" # stub_status
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro

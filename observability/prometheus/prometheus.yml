@@ -1,13 +1,16 @@
 global:
-  scrape_interval: 10s  # By default, scrape targets every 15 seconds.
-  evaluation_interval: 10s # Evaluate rules every 15 seconds.
+  scrape_interval: 10s  
+  evaluation_interval: 10s 
+
 rule_files:
   - '/etc/prometheus/alert.rules.yml'
+
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
           - demo_alertmanager:9093
+
 scrape_configs:
   # Monitor itself
   - job_name: 'prometheus'
@@ -19,19 +22,4 @@ scrape_configs:
   - job_name: 'alloy-telemetry'
     static_configs:
       - targets: ['demo_alloy:12345']
-  # Check Nginx, App is alive (Blackbox)
-  - job_name: 'container-health-check'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-        - http://demo_nginx:80
-        - http://demo_backend:8000
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: demo_alloy:12345
+
