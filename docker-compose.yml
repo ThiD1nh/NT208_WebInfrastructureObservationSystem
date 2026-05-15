@@ -47,7 +47,7 @@ services:
     image: nginx:alpine
     container_name: demo_nginx
     ports:
-      - "80:80"
+      - "8081:80"
       - "8080:8080" # stub_status
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -64,6 +64,7 @@ services:
     ports:
       - "4317:4317" # Port gRPC 
       - "4318:4318" # Port HTTP 
+      - "12345:12345" # Port UI Alloy
     volumes:
       - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - ./target-app/logs:/var/log/app:ro
@@ -71,6 +72,7 @@ services:
     command: 
       - run
       - /etc/alloy/config.alloy 
+      - --server.http.listen-addr=0.0.0.0:12345
     depends_on:
       - nginx
       - prometheus
@@ -97,6 +99,7 @@ services:
       - "19090:9090"
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro 
+      - ./observability/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
       - prom_data:/prometheus 
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
