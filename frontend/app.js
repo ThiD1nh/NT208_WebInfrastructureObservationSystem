@@ -72,7 +72,7 @@ function defaultApiBase() {
     window.location.port !== "80";
 
   if (isFile || isStandaloneFrontend) {
-    return "http://localhost";
+    return "http://localhost:8081";
   }
 
   return window.location.origin;
