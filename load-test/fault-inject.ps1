@@ -1,6 +1,4 @@
-# fault-inject.ps1 — Inject loi vao he thong de quan sat tren Grafana
-# Chay tren Windows voi PowerShell 5.1+ hoac PowerShell 7+
-# Yeu cau: Docker Desktop dang chay
+
 
 function Write-Info    { param($msg) Write-Host "[INFO] $msg" -ForegroundColor Cyan }
 function Write-Ok      { param($msg) Write-Host "[OK]   $msg" -ForegroundColor Green }
@@ -12,15 +10,11 @@ function Invoke-MySQL {
     docker exec demo_mysql mysql -u app_user -papp_password shop_db -e $sql 2>$null
 }
 
-# ===========================================================================
-# Kich ban 1: Crash App — simulate outage
-# Quan sat: Nginx tra 502, traces dung, Prometheus alert firing
-# ===========================================================================
 function Invoke-CrashApp {
-    Write-Info "Kich ban 1: Dung container backend → Nginx se tra 502"
+    Write-Info "Kich ban 1: Dung container backend -> Nginx se tra 502"
     docker stop demo_backend
     Write-Wait "Backend da dung. Doi 30 giay..."
-    Write-Wait "→ Mo Grafana va quan sat: http_req_failed tang vot, traces bien mat"
+    Write-Wait "-> Mo Grafana va quan sat: http_req_failed tang vot, traces bien mat"
     Start-Sleep -Seconds 30
     Write-Info "Khoi dong lai backend..."
     docker start demo_backend
@@ -28,10 +22,6 @@ function Invoke-CrashApp {
     Write-Ok "Backend da phuc hoi."
 }
 
-# ===========================================================================
-# Kich ban 2: UNSIGNED MySQL constraint — trigger HTTP 500
-# Quan sat: MySQL error trong log, trace span bi danh dau error
-# ===========================================================================
 function Invoke-UnsignedOverflow {
     Write-Info "Kich ban 2: Tru stock Laptop qua so luong ton kho (UNSIGNED overflow)"
 
@@ -52,10 +42,6 @@ function Invoke-UnsignedOverflow {
     Write-Ok "Stock da reset ve 3."
 }
 
-# ===========================================================================
-# Kich ban 3: Bottleneck query — thieu index tren cot status
-# Quan sat: Slow query time, MySQL exporter metrics tang, latency cao
-# ===========================================================================
 function Invoke-SlowQuery {
     Write-Info "Kich ban 3: Chay query tren bang orders khong co index (50,000 rows)"
     Write-Info "Chay 10 lan lien tiep de tao load..."
@@ -71,33 +57,26 @@ function Invoke-SlowQuery {
     }
 
     $avg = [math]::Round($total / 10)
-    Write-Ok "Trung binh: ${avg}ms — full table scan tren 50K rows."
-    Write-Wait "→ So sanh voi query co index (sau khi them ALTER TABLE orders ADD INDEX idx_status (status))"
+    Write-Ok "Trung binh: ${avg}ms - full table scan tren 50K rows."
+    Write-Wait "-> So sanh voi query co index (sau khi them ALTER TABLE orders ADD INDEX idx_status (status))"
 }
 
-# ===========================================================================
-# Kich ban 4: CPU throttle — simulate resource exhaustion
-# Quan sat: Latency tang cao, Prometheus alert HostHighCpuLoad
-# ===========================================================================
 function Invoke-CpuThrottle {
     Write-Info "Kich ban 4: Gioi han CPU container backend xuong 0.1 core"
     docker update --cpus="0.1" demo_backend
     Write-Ok "CPU da gioi han. Backend se chay rat cham."
-    Write-Wait "→ Goi nhieu request de thay latency tang: curl http://localhost:8081/api/fast"
-    Write-Wait "→ Doi 60 giay roi tu dong phuc hoi..."
+    Write-Wait "-> Goi nhieu request de thay latency tang: curl http://localhost:8081/api/fast"
+    Write-Wait "-> Doi 60 giay roi tu dong phuc hoi..."
     Start-Sleep -Seconds 60
     Write-Info "Phuc hoi CPU..."
     docker update --cpus="0" demo_backend
     Write-Ok "CPU da phuc hoi (khong gioi han)."
 }
 
-# ===========================================================================
-# Menu chinh
-# ===========================================================================
 function Show-Menu {
     Write-Host ""
     Write-Host "================================" -ForegroundColor Cyan
-    Write-Host "  Fault Injection — NT208 Demo  " -ForegroundColor Cyan
+    Write-Host "  Fault Injection - NT208 Demo  " -ForegroundColor Cyan
     Write-Host "================================" -ForegroundColor Cyan
     Write-Host "  1) Crash App         (simulate outage, Nginx 502)"
     Write-Host "  2) UNSIGNED Overflow (MySQL constraint, HTTP 500)"
