@@ -4,6 +4,14 @@ Dự án này là giả lập 1 hệ thống giám sát **Observation System** �
 
 ---
 
+## 👨‍💻 Thành viên nhóm 
+| MSSV | Họ và tên | Chức vụ |
+|---|---|---|
+| 24521656 | Trần Đình Thi | Nhóm trưởng |
+| 24521773 | Nguyễn Hữu Tiến | Thành viên |
+| 24521593 | Vũ Cao Thạch | Thành viên |
+| 24521676 | Đỗ Toàn Thịnh | Thành viên | 
+
 ## 🏗️ Các thành phần trong Repo
 
 Dự án được chia thành các khối chính:
