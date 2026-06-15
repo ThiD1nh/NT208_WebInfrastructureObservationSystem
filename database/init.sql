@@ -4,6 +4,7 @@
 
 CREATE DATABASE IF NOT EXISTS shop_db;
 USE shop_db;
+GRANT REPLICATION CLIENT ON *.* TO 'app_user'@'%';
 
 -- ===========================================================================
 -- 1. BẢNG USERS (KHÔNG CÓ LỖI)
